@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dividend FIRE Calculator | วางแผนเกษียณด้วยปันผล</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Prompt:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            color: #334155;
+        }
+
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 24px; 
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-modern {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+
+        .input-modern:focus {
+            background-color: #ffffff;
+            border-color: #818cf8;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.15);
+        }
+
+        .label-modern {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        <div class="text-center mb-10 mt-4">
+            <h1 class="text-4xl md:text-5xl font-bold text-gradient mb-3"วางแผนอิสรภาพทางการเงิน (FIRE🔥)</h1>
+            <p class="text-lg text-slate-500">คำนวณเงินลงทุนรายเดือน เพื่อสร้างพอร์ตปันผลในอนาคต</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 glass-card space-y-6">
+                <div class="flex items-center space-x-2 border-b border-slate-100 pb-4">
+                    <span class="text-2xl">📝</span>
+                    <h2 class="text-xl font-semibold text-slate-800">ข้อมูลเป้าหมายของคุณ</h2>
+                </div>
+                
+                <form id="calcForm" class="space-y-5">
+                    <!-- ลบ value ออก ใส่ placeholder แทน และเปลี่ยน type="text" คลาส comma-format สำหรับช่องเงิน -->
+                    <div>
+                        <label class="label-modern">รายจ่าย/ปันผลที่ต้องการต่อเดือน (ณ วันนี้)</label>
+                        <input type="text" inputmode="numeric" id="targetMonthly" placeholder="เช่น 50,000" class="input-modern comma-format">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <!-- คงค่า value="3" ไว้ตาม Requirement -->
+                            <label class="label-modern">เงินเฟ้อต่อปี (%)</label>
+                            <input type="number" id="inflation" value="3" step="0.1" placeholder="เช่น 3" class="input-modern">
+                        </div>
+                        <div>
+                            <label class="label-modern">ปันผลคาดหวัง (%)</label>
+                            <input type="number" id="dividendYield" step="0.1" placeholder="เช่น 5" class="input-modern">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label-modern">เวลาสะสมพอร์ต (ปี)</label>
+                                <input type="number" id="totalYears" placeholder="เช่น 20" class="input-modern">
+                                <p class="text-[11px] text-slate-400 mt-1 leading-tight">ระยะเวลาตั้งแต่เริ่ม จนถึงปีที่ต้องการใช้เงินปันผล</p>
+                            </div>
+                            <div>
+                                <label class="label-modern">เวลาที่เติมเงินได้ (ปี)</label>
+                                <input type="number" id="investYears" placeholder="เช่น 5" class="input-modern">
+                                <p class="text-[11px] text-slate-400 mt-1 leading-tight">จำนวนปีที่จะเติมเงินรายเดือน (หลังจากนี้จะปล่อยให้เงินโตเอง)</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-sm text-indigo-600 font-medium bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 flex items-center" id="growOnlyText">
+                            ⏳ เวลาปล่อยพอร์ตเติบโตเอง: 0 ปี
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <div class="mb-4">
+                            <label class="label-modern">เงินตั้งต้นที่มีตอนนี้ (บาท)</label>
+                            <!-- ใช้ comma-format -->
+                            <input type="text" inputmode="numeric" id="initialLumpSum" placeholder="เช่น 100,000" class="input-modern comma-format">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label-modern">ผลตอบแทนพอร์ต (%)</label>
+                                <input type="number" id="growthRate" step="0.1" placeholder="เช่น 8" class="input-modern">
+                            </div>
+                            <div>
+                                <label class="label-modern">วันที่ลงทุน (1-31)</label>
+                                <input type="number" id="investDate" min="1" max="31" placeholder="เช่น 1 หรือ 31" class="input-modern">
+                                <p class="text-[11px] text-slate-400 mt-1 leading-tight">จะเติมเงินเข้าพอร์ต ทุกๆ วันที่เท่าไหร่ของเดือน</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- กล่องแสดงผลยังคงเหมือนเดิม -->
+            <div class="lg:col-span-8 space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card metric-card bg-gradient-to-br from-white to-indigo-50/50 border-t-4 border-t-indigo-500">
+                        <p class="text-sm text-slate-500 font-medium mb-1">💼 เงินลงทุนต่อเดือน (PMT)</p>
+                        <h3 class="text-3xl font-bold text-indigo-900" id="resMonthlyInvest">฿0</h3>
+                        <p class="text-sm text-indigo-600 mt-2 font-medium bg-indigo-100/50 inline-block px-2 py-1 rounded-md">
+                            ต้องลงทุนเป็นเวลา <span id="resInvestYearsSpan">0</span> ปี
+                        </p>
+                    </div>
+                    
+                    <div class="glass-card metric-card bg-gradient-to-br from-white to-emerald-50/50 border-t-4 border-t-emerald-500">
+                        <p class="text-sm text-slate-500 font-medium mb-1">🎯 เป้าหมายพอร์ตปีที่ <span id="resTotalYearsSpan">0</span></p>
+                        <h3 class="text-3xl font-bold text-emerald-900" id="resTargetPort">฿0</h3>
+                        <p class="text-sm text-emerald-600 mt-2 font-medium bg-emerald-100/50 inline-block px-2 py-1 rounded-md">
+                            เพื่อรับปันผล <span id="resFutureDividend">0</span>/ด.
+                        </p>
+                    </div>
+
+                    <div class="glass-card metric-card bg-gradient-to-br from-white to-amber-50/50 border-t-4 border-t-amber-400">
+                        <p class="text-sm text-slate-500 font-medium mb-1">🚀 พอร์ต ณ ปีที่หยุดเติมเงิน</p>
+                        <h3 class="text-3xl font-bold text-amber-900" id="resStopInvestPort">฿0</h3>
+                        <p class="text-sm text-amber-600 mt-2 font-medium bg-amber-100/50 inline-block px-2 py-1 rounded-md">
+                            ปล่อยทิ้งไว้ <span id="resGrowOnlyYearsSpan">0</span> ปี
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-slate-800">📈 กราฟจำลองการเติบโตของพอร์ต (50 ปี)</h2>
+                    </div>
+                    <div class="relative h-[350px] w-full">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let myChart = null;
+
+        // --- เพิ่มฟังก์ชันจัดการลูกน้ำ (Comma Formatting) ---
+        const formatNumberInput = function(e) {
+            // ลบทุกอย่างที่ไม่ใช่ตัวเลขและจุดทศนิยม
+            let value = this.value.replace(/[^0-9.]/g, '');
+            
+            // ป้องกันการใส่จุดทศนิยมซ้ำ
+            const parts = value.split('.');
+            if(parts.length > 2) {
+                parts.pop();
+                value = parts.join('.');
+            }
+
+            if(value !== '') {
+                if (parts.length === 2) {
+                    this.value = parseInt(parts[0] || 0).toLocaleString('en-US') + '.' + parts[1];
+                } else {
+                    this.value = parseInt(value || 0).toLocaleString('en-US');
+                }
+            } else {
+                this.value = '';
+            }
+        };
+
+        // แนบ Event ดักจับการพิมพ์ ไปที่ช่องที่มี class 'comma-format'
+        document.querySelectorAll('.comma-format').forEach(input => {
+            input.addEventListener('input', formatNumberInput);
+        });
+
+        // ฟังก์ชันดึงค่าตัวเลขจาก Input (ลบลูกน้ำออกก่อนแปลงค่า)
+        function getNumberValue(id) {
+            const rawValue = document.getElementById(id).value;
+            if (!rawValue) return 0; // ถ้าเป็นช่องว่าง ให้มองเป็น 0
+            const cleanValue = rawValue.toString().replace(/,/g, ''); // ลบลูกน้ำ
+            return parseFloat(cleanValue) || 0;
+        }
+
+        function calculateAndRender() {
+            // ใช้ฟังก์ชัน getNumberValue แทนการดึง value ตรงๆ
+            const targetMonthly = getNumberValue('targetMonthly');
+            const inflation = getNumberValue('inflation');
+            const dividendYield = getNumberValue('dividendYield');
+            const totalYears = getNumberValue('totalYears');
+            let investYears = getNumberValue('investYears');
+            const initialLumpSum = getNumberValue('initialLumpSum');
+            const growthRate = getNumberValue('growthRate');
+            let investDate = getNumberValue('investDate') || 1; // ถ้าไม่ได้กรอกให้เป็นวันที่ 1
+            
+            if (investDate < 1) investDate = 1;
+            if (investDate > 31) investDate = 31;
+
+            if (investYears > totalYears) {
+                investYears = totalYears;
+                document.getElementById('investYears').value = totalYears;
+            }
+
+            const growOnlyYears = Math.max(0, totalYears - investYears);
+            document.getElementById('growOnlyText').innerHTML = `⏳ เวลาปล่อยพอร์ตเติบโตเอง: <span class="font-bold">${growOnlyYears} ปี</span>`;
+
+            // ป้องกันการหารด้วยศูนย์ กรณีผู้ใช้ลบตัวเลขทิ้งหมด
+            if (totalYears === 0 || dividendYield === 0) {
+                updateEmptyState();
+                return;
+            }
+
+            const inflationDec = inflation / 100;
+            const currentAnnualDividend = targetMonthly * 12;
+            const futureAnnualDividend = currentAnnualDividend * Math.pow(1 + inflationDec, totalYears);
+            
+            const dividendYieldDec = dividendYield / 100;
+            const targetPortSize = dividendYieldDec > 0 ? futureAnnualDividend / dividendYieldDec : 0;
+
+            const growthDec = growthRate / 100;
+            const portAtStopInvesting = targetPortSize / Math.pow(1 + growthDec, growOnlyYears);
+
+            const monthlyRate = growthDec / 12;
+            const totalInvestMonths = investYears * 12;
+            
+            const fvOfInitial = initialLumpSum * Math.pow(1 + monthlyRate, totalInvestMonths);
+            const remainingTarget = portAtStopInvesting - fvOfInitial;
+
+            let monthlyInvestment = 0;
+            if (totalInvestMonths > 0) {
+                if (monthlyRate === 0) {
+                    monthlyInvestment = remainingTarget / totalInvestMonths;
+                } else {
+                    const fraction = Math.max(0, (31 - investDate) / 30);
+                    let pmtEnd = (remainingTarget * monthlyRate) / (Math.pow(1 + monthlyRate, totalInvestMonths) - 1);
+                    monthlyInvestment = pmtEnd / (1 + (monthlyRate * fraction));
+                }
+            } else if (remainingTarget > 0 && investYears === 0) {
+                // กรณีไม่เติมเงินเลย แต่เงินตั้งต้นไม่พอ
+                monthlyInvestment = 0;
+            }
+
+            if (monthlyInvestment < 0) monthlyInvestment = 0;
+
+            const formatTHB = (num) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(num);
+            const formatShortTHB = (num) => {
+                if(num >= 1000000) return '฿' + (num / 1000000).toFixed(2) + 'M';
+                if(num >= 10000) return '฿' + (num / 1000).toFixed(0) + 'k';
+                return formatTHB(num);
+            };
+
+            document.getElementById('resMonthlyInvest').innerText = formatTHB(monthlyInvestment);
+            document.getElementById('resTargetPort').innerText = formatShortTHB(targetPortSize);
+            document.getElementById('resStopInvestPort').innerText = formatShortTHB(portAtStopInvesting);
+            
+            document.getElementById('resInvestYearsSpan').innerText = investYears;
+            document.getElementById('resTotalYearsSpan').innerText = totalYears;
+            document.getElementById('resFutureDividend').innerText = formatShortTHB(futureAnnualDividend / 12);
+            document.getElementById('resGrowOnlyYearsSpan').innerText = growOnlyYears;
+
+            generateChart(initialLumpSum, monthlyInvestment, monthlyRate, growthDec, investYears, totalYears, investDate, targetPortSize);
+            saveToLocalStorage();
+        }
+
+        // ฟังก์ชันล้างค่าหน้าจอตอนข้อมูลไม่ครบ
+        function updateEmptyState() {
+            document.getElementById('resMonthlyInvest').innerText = "฿0";
+            document.getElementById('resTargetPort').innerText = "฿0";
+            document.getElementById('resStopInvestPort').innerText = "฿0";
+            generateChart(0, 0, 0, 0, 0, 0, 1, 0);
+        }
+
+        function generateChart(initial, pmt, monthlyRate, annualRate, investYears, totalYears, investDate, targetPortSize) {
+            const labels = [];
+            const dataPoints = [];
+            let currentBalance = initial;
+            const fraction = Math.max(0, (31 - investDate) / 30);
+
+            for (let year = 0; year <= 50; year++) {
+                labels.push(`ปีที่ ${year}`);
+                dataPoints.push(currentBalance);
+
+                if (year < investYears) {
+                    for (let m = 1; m <= 12; m++) {
+                        const interestOnBalance = currentBalance * monthlyRate;
+                        const interestOnPmt = pmt * monthlyRate * fraction; 
+                        currentBalance = currentBalance + interestOnBalance + pmt + interestOnPmt;
+                    }
+                } else {
+                    currentBalance = currentBalance * (1 + annualRate);
+                }
+            }
+
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(79, 70, 229, 0.4)'); 
+            gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)'); 
+
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            Chart.defaults.font.family = "'Prompt', sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: ' มูลค่าพอร์ตจำลอง',
+                        data: dataPoints,
+                        borderColor: '#4f46e5',
+                        backgroundColor: gradient, 
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4, 
+                        pointRadius: 0,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: '#ffffff',
+                        pointHoverBorderColor: '#4f46e5',
+                        pointHoverBorderWidth: 3,
+                        hitRadius: 20
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 14, family: "'Prompt', sans-serif" },
+                            bodyFont: { size: 14, family: "'Prompt', sans-serif" },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' มูลค่า: ฿' + context.parsed.y.toLocaleString('th-TH', {maximumFractionDigits: 0});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false }
+                        },
+                        y: {
+                            border: { display: false },
+                            grid: { color: '#f1f5f9', drawTicks: false },
+                            ticks: {
+                                padding: 10,
+                                callback: function(value) {
+                                    if(value >= 1000000) return (value / 1000000) + 'M';
+                                    if(value >= 1000) return (value / 1000) + 'k';
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const inputIds = ['targetMonthly', 'inflation', 'dividendYield', 'totalYears', 'investYears', 'initialLumpSum', 'growthRate', 'investDate'];
+
+        function saveToLocalStorage() {
+            const data = {};
+            inputIds.forEach(id => {
+                data[id] = document.getElementById(id).value;
+            });
+            localStorage.setItem('dividendPlannerData', JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('dividendPlannerData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                inputIds.forEach(id => {
+                    if (data[id]) {
+                        document.getElementById(id).value = data[id];
+                    }
+                });
+            }
+        }
+
+        window.onload = function() {
+            loadFromLocalStorage();
+            calculateAndRender();
+
+            inputIds.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateAndRender);
+            });
+        };
+    </script>
+</body>
+</html>

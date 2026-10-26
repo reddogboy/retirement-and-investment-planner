@@ -148,7 +148,7 @@
                                 <input type="number" id="totalYears" placeholder="เช่น 20" class="input-modern">
                             </div>
                             <div class="flex flex-col justify-end h-full">
-                                <label class="label-modern">เวลาที่ใส่เงินได้ (ปี)
+                                <label class="label-modern">เวลาที่เติมเงินได้ (ปี)
                                     <span class="block text-[11px] text-slate-500 font-normal mt-0.5">จำนวนปีที่สามารถจะเติมเงินเข้าพอร์ตลงทุนได้</span>
                                 </label>
                                 <input type="number" id="investYears" placeholder="เช่น 10" class="input-modern">
@@ -244,7 +244,7 @@
             </div>
         </div>
 
-        <!-- Footer สำหรับโปรโมทเว็บไซต์ (เพิ่ม mx-auto และ mt-10 เพื่อความสวยงาม) -->
+        <!-- Footer สำหรับโปรโมทเว็บไซต์ -->
         <div class="w-full max-w-2xl mx-auto mt-10 text-center text-gray-700 text-xs sm:text-sm font-semibold bg-white/70 p-4 rounded-2xl shadow-sm border border-white/50 backdrop-blur-sm">
             👾 ลองเล่นโปรแกรมจำลองและคำนวณอย่างอื่นได้ที่<br>
             <a href="https://reddogboy.github.io/lottery-kitchenruay-website/" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline inline-block mt-1.5 transition-colors">
@@ -334,11 +334,13 @@
             const dividendYieldDec = dividendYield / 100;
             const targetPortSize = dividendYieldDec > 0 ? futureAnnualDividend / dividendYieldDec : 0;
 
+            // [อัปเดตแกนหลักคณิตศาสตร์] คำนวณอัตราดอกเบี้ยต่อเดือนล่วงหน้า
             const growthDec = growthRate / 100;
-            const portAtStopInvesting = targetPortSize / Math.pow(1 + growthDec, growOnlyYears);
-
             const monthlyRate = growthDec / 12;
             const totalInvestMonths = investYears * 12;
+
+            // [แก้ไขสมการทบต้น 1] ใช้ดอกเบี้ยต่อเดือนในการคิดลด (Discounting)
+            const portAtStopInvesting = targetPortSize / Math.pow(1 + monthlyRate, growOnlyYears * 12);
             
             const fvOfInitial = initialLumpSum * Math.pow(1 + monthlyRate, totalInvestMonths);
             const remainingTarget = portAtStopInvesting - fvOfInitial;
@@ -375,7 +377,7 @@
             document.getElementById('resFutureDividend').innerText = formatShortTHB(futureAnnualDividend / 12);
             document.getElementById('resGrowOnlyYearsSpan').innerText = growOnlyYears;
 
-            generateChart(initialLumpSum, monthlyInvestment, monthlyRate, growthDec, investYears, totalYears, investDate, chartYears, startYear);
+            generateChart(initialLumpSum, monthlyInvestment, monthlyRate, investYears, totalYears, investDate, chartYears, startYear);
             saveToLocalStorage();
         }
 
@@ -383,10 +385,10 @@
             document.getElementById('resMonthlyInvest').innerText = "฿0";
             document.getElementById('resTargetPort').innerText = "฿0";
             document.getElementById('resStopInvestPort').innerText = "฿0";
-            generateChart(0, 0, 0, 0, 0, 0, 1, 30, new Date().getFullYear());
+            generateChart(0, 0, 0, 0, 0, 1, 30, new Date().getFullYear());
         }
 
-        function generateChart(initial, pmt, monthlyRate, annualRate, investYears, totalYears, investDate, chartYears, startYear) {
+        function generateChart(initial, pmt, monthlyRate, investYears, totalYears, investDate, chartYears, startYear) {
             const labels = [];
             const dataTotal = [];
             const dataPrincipal = [];
@@ -422,7 +424,10 @@
                         currentPrincipal += pmt;
                     }
                 } else {
-                    currentBalance = currentBalance * (1 + annualRate);
+                    // [แก้ไขสมการทบต้น 2] บังคับให้กราฟทบต้นแบบรายเดือนตลอดอายุขัย
+                    for (let m = 1; m <= 12; m++) {
+                        currentBalance += currentBalance * monthlyRate;
+                    }
                 }
             }
 
@@ -485,6 +490,7 @@
                     interaction: {
                         mode: 'index',
                         intersect: false,
+                        axis: 'x' // อัปเกรด: สนใจแค่แกน X (แกนนอน)
                     },
                     plugins: {
                         legend: { display: false },
@@ -494,6 +500,8 @@
                             bodyFont: { size: 14, family: "'Prompt', sans-serif" },
                             padding: 12,
                             cornerRadius: 12,
+                            caretPadding: 15, // อัปเกรด: ดันกล่องออกห่างจากจุดไข่ปลา
+                            yAlign: 'bottom', // อัปเกรด: บังคับให้กล่องลอยอยู่ "ข้างบน" เสมอ
                             callbacks: {
                                 title: function(context) {
                                     let yearIdx = context[0].dataIndex;

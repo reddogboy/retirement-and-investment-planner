@@ -84,6 +84,15 @@
             font-weight: 300;
         }
 
+        /* เพิ่มดีไซน์สำหรับ Dropdown ให้มีลูกศรชี้ลง */
+        .select-modern {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
         .label-modern {
             display: block;
             font-size: 0.875rem;
@@ -183,9 +192,9 @@
                         <h3 class="text-sm font-semibold text-slate-700 mb-3">⚙️ ตั้งค่าการแสดงผลกราฟ</h3>
                         <div class="grid grid-cols-2 gap-3 sm:gap-4">
                             <div class="flex flex-col justify-end h-full">
-                                <!-- อัปเกรด: เปลี่ยนจาก type="date" เป็น type="number" และแก้หัวข้อ -->
                                 <label class="label-modern">ปีที่เริ่มต้น (ค.ศ.)</label>
-                                <input type="number" id="startYearInput" placeholder="เช่น 2026" class="input-modern">
+                                <!-- เปลี่ยนจาก input เป็น select เพื่อสร้างวงล้อ -->
+                                <select id="startYearInput" class="input-modern select-modern cursor-pointer"></select>
                             </div>
                             <div class="flex flex-col justify-end h-full">
                                 <label class="label-modern">แสดงกราฟถึงปีที่</label>
@@ -193,7 +202,7 @@
                             </div>
                         </div>
                         <p id="funnyWarning" class="text-sm text-red-500 mt-3 font-semibold hidden bg-red-50 p-2 rounded-lg border border-red-200">
-                            🚨 ถามหน่อยได้บ่จ้า มึJจะมีบุญอยู่ถึงเหรอค้า?
+                            🚨 ถามหน่อย มึJจะมีบุญอยู่ถึงเหรอค้า?
                         </p>
                     </div>
 
@@ -296,7 +305,7 @@
             const growthRate = getNumberValue('growthRate');
             let investDate = getNumberValue('investDate') || 1;
             
-            // อัปเกรด: ดึงตัวเลขปีตรงๆ จากช่องใหม่
+            // ดึงค่าปี ค.ศ. จากวงล้อ Dropdown
             let startYearStr = document.getElementById('startYearInput').value;
             let startYear = startYearStr ? parseInt(startYearStr) : new Date().getFullYear();
 
@@ -565,7 +574,7 @@
             });
         }
 
-        // เปลี่ยน ID ใน array ให้ตรงกับ ID ใหม่
+        // อัปเดต Array ให้จำค่าวงล้อ
         const inputIds = ['targetMonthly', 'inflation', 'dividendYield', 'totalYears', 'investYears', 'initialLumpSum', 'growthRate', 'investDate', 'startYearInput', 'chartDisplayYears'];
 
         function saveToLocalStorage() {
@@ -589,10 +598,16 @@
         }
 
         window.onload = function() {
-            // อัปเกรด: ใส่ตัวเลขปีปัจจุบันเข้าไปแทนที่วันที่เต็ม
-            const yearInput = document.getElementById('startYearInput');
-            if (!yearInput.value) {
-                yearInput.value = new Date().getFullYear();
+            // สร้างตัวเลือกปี ค.ศ. ในวงล้ออัตโนมัติ (ปีปัจจุบัน ถึง +30 ปี)
+            const yearSelect = document.getElementById('startYearInput');
+            if (yearSelect) {
+                const currentYear = new Date().getFullYear();
+                for (let i = 0; i <= 30; i++) {
+                    const option = document.createElement('option');
+                    option.value = currentYear + i;
+                    option.text = currentYear + i;
+                    yearSelect.appendChild(option);
+                }
             }
 
             loadFromLocalStorage();

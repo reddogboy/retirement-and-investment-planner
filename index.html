@@ -218,7 +218,8 @@
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-semibold text-slate-800">📈 กราฟเปรียบเทียบเงินต้น & การเติบโต</h2>
                         <div class="flex space-x-3 text-xs font-medium text-slate-500">
-                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-slate-300 mr-1"></span>เงินต้น</span>
+                            <!-- เปลี่ยนจุดสีเงินต้นให้เข้มขึ้นตามเส้นกราฟใหม่ -->
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-slate-500 mr-1"></span>เงินต้น</span>
                             <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-indigo-500 mr-1"></span>พอร์ตรวม</span>
                             <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-pink-500 mr-1"></span>จุดสำคัญ</span>
                         </div>
@@ -442,16 +443,16 @@
                         {
                             label: ' เงินต้นที่ลงทุน',
                             data: dataPrincipal,
-                            borderColor: '#cbd5e1', // สีเทา
+                            borderColor: '#64748b', // เปลี่ยนสีให้เข้มขึ้น (Slate-500)
                             backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            borderDash: [5, 5], // เส้นประ
+                            borderWidth: 3, // เพิ่มความหนาของเส้น
+                            borderDash: [6, 4], // ปรับระยะห่างเส้นประให้ดูโปร่งและชัดเจนขึ้น
                             fill: false,
                             tension: 0.4, 
                             pointRadius: 0,
                             pointHoverRadius: 5,
                             pointHoverBackgroundColor: '#ffffff',
-                            pointHoverBorderColor: '#94a3b8',
+                            pointHoverBorderColor: '#475569',
                             order: 2 // ให้อยู่ข้างหน้า
                         }
                     ]
@@ -482,11 +483,21 @@
                                 label: function(context) {
                                     return ' ' + context.dataset.label + ': ฿' + context.parsed.y.toLocaleString('th-TH', {maximumFractionDigits: 0});
                                 },
-                                // เพิ่มบรรทัดสรุปกำไร (ดอกเบี้ย) ใน tooltip
+                                // เพิ่มบรรทัดสรุปกำไร (ดอกเบี้ย) และ % ใน tooltip
                                 afterBody: function(context) {
                                     if (context.length === 2) {
-                                        let profit = context[0].parsed.y - context[1].parsed.y;
-                                        return '\n 📈 กำไร (ดอกเบี้ย): ฿' + profit.toLocaleString('th-TH', {maximumFractionDigits: 0});
+                                        let total = context[0].parsed.y;
+                                        let principal = context[1].parsed.y;
+                                        let profit = total - principal;
+                                        
+                                        // คำนวณเปอร์เซ็นต์กำไร
+                                        let percentText = "";
+                                        if (principal > 0) {
+                                            let percent = (profit / principal) * 100;
+                                            percentText = ` (+${percent.toLocaleString('th-TH', {maximumFractionDigits: 1})}%)`;
+                                        }
+
+                                        return '\n 📈 กำไร (ดอกเบี้ย): ฿' + profit.toLocaleString('th-TH', {maximumFractionDigits: 0}) + percentText;
                                     }
                                 }
                             }

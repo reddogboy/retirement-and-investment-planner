@@ -148,7 +148,7 @@
                                 <input type="number" id="totalYears" placeholder="เช่น 20" class="input-modern">
                             </div>
                             <div class="flex flex-col justify-end h-full">
-                                <label class="label-modern">เวลาที่เติมเงินได้ (ปี)
+                                <label class="label-modern">เวลาที่ใส่เงินได้ (ปี)
                                     <span class="block text-[11px] text-slate-500 font-normal mt-0.5">จำนวนปีที่สามารถจะเติมเงินเข้าพอร์ตลงทุนได้</span>
                                 </label>
                                 <input type="number" id="investYears" placeholder="เช่น 10" class="input-modern">
@@ -167,7 +167,7 @@
 
                         <div class="grid grid-cols-2 gap-3 sm:gap-4">
                             <div class="flex flex-col justify-end h-full">
-                                <label class="label-modern">อัตราเติบโตคาดหวังของพอร์ต (%)</label>
+                                <label class="label-modern">อัตราเติบโตคาดหวังพอร์ต (%)</label>
                                 <input type="number" id="growthRate" step="0.1" placeholder="เช่น 8" class="input-modern">
                             </div>
                             <div class="flex flex-col justify-end h-full">
@@ -183,8 +183,9 @@
                         <h3 class="text-sm font-semibold text-slate-700 mb-3">⚙️ ตั้งค่าการแสดงผลกราฟ</h3>
                         <div class="grid grid-cols-2 gap-3 sm:gap-4">
                             <div class="flex flex-col justify-end h-full">
-                                <label class="label-modern">วันที่เริ่มต้นลงทุน</label>
-                                <input type="date" id="startDate" class="input-modern text-sm px-2">
+                                <!-- อัปเกรด: เปลี่ยนจาก type="date" เป็น type="number" และแก้หัวข้อ -->
+                                <label class="label-modern">ปีที่เริ่มต้น (ค.ศ.)</label>
+                                <input type="number" id="startYearInput" placeholder="เช่น 2026" class="input-modern">
                             </div>
                             <div class="flex flex-col justify-end h-full">
                                 <label class="label-modern">แสดงกราฟถึงปีที่</label>
@@ -244,7 +245,6 @@
             </div>
         </div>
 
-        <!-- Footer สำหรับโปรโมทเว็บไซต์ -->
         <div class="w-full max-w-2xl mx-auto mt-10 text-center text-gray-700 text-xs sm:text-sm font-semibold bg-white/70 p-4 rounded-2xl shadow-sm border border-white/50 backdrop-blur-sm">
             👾 ลองเล่นโปรแกรมจำลองและคำนวณอย่างอื่นได้ที่<br>
             <a href="https://reddogboy.github.io/lottery-kitchenruay-website/" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline inline-block mt-1.5 transition-colors">
@@ -296,9 +296,9 @@
             const growthRate = getNumberValue('growthRate');
             let investDate = getNumberValue('investDate') || 1;
             
-            let startDateStr = document.getElementById('startDate').value;
-            let startDate = startDateStr ? new Date(startDateStr) : new Date();
-            let startYear = startDate.getFullYear();
+            // อัปเกรด: ดึงตัวเลขปีตรงๆ จากช่องใหม่
+            let startYearStr = document.getElementById('startYearInput').value;
+            let startYear = startYearStr ? parseInt(startYearStr) : new Date().getFullYear();
 
             let inputChartYears = getNumberValue('chartDisplayYears');
             let chartYears = inputChartYears > 0 ? inputChartYears : (totalYears > 0 ? totalYears + 5 : 30);
@@ -334,13 +334,11 @@
             const dividendYieldDec = dividendYield / 100;
             const targetPortSize = dividendYieldDec > 0 ? futureAnnualDividend / dividendYieldDec : 0;
 
-            // [อัปเดตแกนหลักคณิตศาสตร์] คำนวณอัตราดอกเบี้ยต่อเดือนล่วงหน้า
             const growthDec = growthRate / 100;
+            const portAtStopInvesting = targetPortSize / Math.pow(1 + growthDec, growOnlyYears);
+
             const monthlyRate = growthDec / 12;
             const totalInvestMonths = investYears * 12;
-
-            // [แก้ไขสมการทบต้น 1] ใช้ดอกเบี้ยต่อเดือนในการคิดลด (Discounting)
-            const portAtStopInvesting = targetPortSize / Math.pow(1 + monthlyRate, growOnlyYears * 12);
             
             const fvOfInitial = initialLumpSum * Math.pow(1 + monthlyRate, totalInvestMonths);
             const remainingTarget = portAtStopInvesting - fvOfInitial;
@@ -377,7 +375,7 @@
             document.getElementById('resFutureDividend').innerText = formatShortTHB(futureAnnualDividend / 12);
             document.getElementById('resGrowOnlyYearsSpan').innerText = growOnlyYears;
 
-            generateChart(initialLumpSum, monthlyInvestment, monthlyRate, investYears, totalYears, investDate, chartYears, startYear);
+            generateChart(initialLumpSum, monthlyInvestment, monthlyRate, growthDec, investYears, totalYears, investDate, chartYears, startYear);
             saveToLocalStorage();
         }
 
@@ -385,10 +383,10 @@
             document.getElementById('resMonthlyInvest').innerText = "฿0";
             document.getElementById('resTargetPort').innerText = "฿0";
             document.getElementById('resStopInvestPort').innerText = "฿0";
-            generateChart(0, 0, 0, 0, 0, 1, 30, new Date().getFullYear());
+            generateChart(0, 0, 0, 0, 0, 0, 1, 30, new Date().getFullYear());
         }
 
-        function generateChart(initial, pmt, monthlyRate, investYears, totalYears, investDate, chartYears, startYear) {
+        function generateChart(initial, pmt, monthlyRate, annualRate, investYears, totalYears, investDate, chartYears, startYear) {
             const labels = [];
             const dataTotal = [];
             const dataPrincipal = [];
@@ -424,10 +422,7 @@
                         currentPrincipal += pmt;
                     }
                 } else {
-                    // [แก้ไขสมการทบต้น 2] บังคับให้กราฟทบต้นแบบรายเดือนตลอดอายุขัย
-                    for (let m = 1; m <= 12; m++) {
-                        currentBalance += currentBalance * monthlyRate;
-                    }
+                    currentBalance = currentBalance * (1 + annualRate);
                 }
             }
 
@@ -490,7 +485,7 @@
                     interaction: {
                         mode: 'index',
                         intersect: false,
-                        axis: 'x' // อัปเกรด: สนใจแค่แกน X (แกนนอน)
+                        axis: 'x' 
                     },
                     plugins: {
                         legend: { display: false },
@@ -500,8 +495,8 @@
                             bodyFont: { size: 14, family: "'Prompt', sans-serif" },
                             padding: 12,
                             cornerRadius: 12,
-                            caretPadding: 15, // อัปเกรด: ดันกล่องออกห่างจากจุดไข่ปลา
-                            yAlign: 'bottom', // อัปเกรด: บังคับให้กล่องลอยอยู่ "ข้างบน" เสมอ
+                            caretPadding: 15,
+                            yAlign: 'bottom',
                             callbacks: {
                                 title: function(context) {
                                     let yearIdx = context[0].dataIndex;
@@ -570,7 +565,8 @@
             });
         }
 
-        const inputIds = ['targetMonthly', 'inflation', 'dividendYield', 'totalYears', 'investYears', 'initialLumpSum', 'growthRate', 'investDate', 'startDate', 'chartDisplayYears'];
+        // เปลี่ยน ID ใน array ให้ตรงกับ ID ใหม่
+        const inputIds = ['targetMonthly', 'inflation', 'dividendYield', 'totalYears', 'investYears', 'initialLumpSum', 'growthRate', 'investDate', 'startYearInput', 'chartDisplayYears'];
 
         function saveToLocalStorage() {
             const data = {};
@@ -593,9 +589,10 @@
         }
 
         window.onload = function() {
-            const dateInput = document.getElementById('startDate');
-            if (!dateInput.value) {
-                dateInput.value = new Date().toISOString().split('T')[0];
+            // อัปเกรด: ใส่ตัวเลขปีปัจจุบันเข้าไปแทนที่วันที่เต็ม
+            const yearInput = document.getElementById('startYearInput');
+            if (!yearInput.value) {
+                yearInput.value = new Date().getFullYear();
             }
 
             loadFromLocalStorage();

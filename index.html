@@ -7,14 +7,12 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Prompt:wght@300;400;500;600;700&display=swap');
         
         body { 
             font-family: 'Prompt', sans-serif; 
-            /* เปลี่ยนพื้นหลังให้ดูพรีเมียม สุขุม */
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             min-height: 100vh;
             color: #334155;
@@ -31,7 +29,6 @@
             transition: all 0.3s ease;
         }
 
-        /* ธีม พรีเมียมโกลด์ สว่าง สบายตา แต่โดดเด่น */
         .glow-card {
             background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
             border-radius: 24px;
@@ -122,17 +119,6 @@
             transition: all 0.2s;
         }
         .group:hover .tooltip-icon { background-color: #0f172a; }
-        
-        .export-btn {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .export-btn:hover {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3);
-        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -149,7 +135,7 @@
             <div class="lg:col-span-4 glass-card space-y-6">
                 
                 <!-- Preset Buttons -->
-                <div data-html2canvas-ignore>
+                <div>
                     <h3 class="text-sm font-semibold text-slate-700 mb-3">💡 เลือกแผนเริ่มต้นฉบับเร่งด่วน</h3>
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="applyPreset(15000, 20, 8)" class="text-sm py-2 px-3 bg-slate-50 border border-slate-200 hover:border-sky-500 hover:text-sky-700 rounded-xl transition-all shadow-sm font-medium">
@@ -285,14 +271,6 @@
             </div>
 
             <div class="lg:col-span-8 space-y-6 relative">
-                
-                <!-- ปุ่ม Export / Share ที่โดดเด่นขึ้น -->
-                <div class="flex justify-end mb-2" data-html2canvas-ignore>
-                    <button onclick="saveAsImage()" class="export-btn px-4 py-2 rounded-xl text-sm font-bold shadow-lg flex items-center space-x-2">
-                        <span class="text-lg">📸</span> 
-                        <span>บันทึกแผนของฉัน (Save Image)</span>
-                    </button>
-                </div>
 
                 <div class="glow-card text-center">
                     <p class="text-amber-800 font-semibold mb-2 tracking-wide text-lg">💡 จำนวนเงินที่ต้องลงทุนต่อเดือน</p>
@@ -352,7 +330,7 @@
             </div>
         </div>
 
-        <div class="w-full max-w-2xl mx-auto mt-10 text-center text-slate-600 text-xs sm:text-sm font-medium bg-white/60 p-4 rounded-2xl shadow-sm border border-white/50 backdrop-blur-sm" data-html2canvas-ignore>
+        <div class="w-full max-w-2xl mx-auto mt-10 text-center text-slate-600 text-xs sm:text-sm font-medium bg-white/60 p-4 rounded-2xl shadow-sm border border-white/50 backdrop-blur-sm">
             👾 ลองเล่นโปรแกรมจำลองและคำนวณอย่างอื่นได้ที่<br>
             <a href="https://reddogboy.github.io/lottery-kitchenruay-website/" target="_blank" class="text-sky-600 hover:text-sky-800 hover:underline inline-block mt-1.5 transition-colors font-semibold">
                 https://reddogboy.github.io/lottery-kitchenruay-website/
@@ -442,25 +420,6 @@
             document.getElementById('inflation').value = 3;
             
             calculateAndRender();
-        }
-
-        // --- ฟังก์ชันถ่ายภาพหน้าจอ ---
-        function saveAsImage() {
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ กำลังบันทึก...';
-            
-            html2canvas(document.getElementById('exportArea'), {
-                scale: 2, 
-                backgroundColor: '#f1f5f9',
-                ignoreElements: (element) => element.hasAttribute('data-html2canvas-ignore')
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'My-FIRE-Plan.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                btn.innerHTML = originalText;
-            });
         }
 
         // --- แกนหลักการคำนวณ ---
@@ -600,9 +559,14 @@
                         div.className = "flex justify-between items-center bg-white/80 p-3 rounded-lg border border-rose-200";
                         
                         let shortLostStr = '';
-                        if(lostMoney >= 1000000) shortLostStr = (lostMoney / 1000000).toFixed(2) + ' ล้านบาท';
-                        else if(lostMoney >= 100000) shortLostStr = (lostMoney / 10000).toFixed(0) + ' แสนบาท';
-                        else shortLostStr = formatTHB(lostMoney);
+                        if(lostMoney >= 1000000) {
+                            shortLostStr = parseFloat((lostMoney / 1000000).toFixed(2)) + ' ล้านบาท';
+                        } else if(lostMoney >= 100000) {
+                            // แก้ไขตัวหารจาก 10000 เป็น 100000 อย่างถูกต้อง!
+                            shortLostStr = parseFloat((lostMoney / 100000).toFixed(1)) + ' แสนบาท';
+                        } else {
+                            shortLostStr = formatTHB(lostMoney);
+                        }
 
                         div.innerHTML = `
                             <span class="text-slate-800 font-bold text-[15px]">เริ่มช้าไป ${delay} ปี</span>

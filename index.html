@@ -2,13 +2,12 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <!-- 🌟 ป้องกันเบราว์เซอร์ซูมหน้าจออัตโนมัติเมื่อกดพิมพ์ตัวเลข -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dividend FIRE Calculator | วางแผนเกษียณด้วยปันผล</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- นำ html2canvas กลับมาสำหรับฟีเจอร์ Save Image -->
+    <!-- นำ html2canvas กลับมาเพื่อรองรับฟีเจอร์ Save Image -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
@@ -122,7 +121,7 @@
             transition: all 0.2s;
         }
         .group:hover .tooltip-icon { background-color: #0f172a; }
-        
+
         /* ปุ่มแชร์ */
         .action-btn {
             transition: all 0.3s ease;
@@ -294,20 +293,20 @@
             </div>
 
             <div class="lg:col-span-8 space-y-6 relative">
-                
-                <!-- 🌟 ระบบแชร์และบันทึกภาพ -->
-                <div class="flex flex-wrap items-center justify-end gap-3 mb-2" data-html2canvas-ignore>
-                    <button onclick="copyPlanText()" id="btnCopy" class="action-btn px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-semibold shadow-md flex items-center space-x-2">
+
+                <!-- 🌟 ระบบแชร์ (จัดกึ่งกลางให้สวยงาม) -->
+                <div class="flex flex-wrap items-center justify-center gap-3 mb-6" data-html2canvas-ignore>
+                    <button onclick="copyPlanText()" id="btnCopy" class="action-btn px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-md flex items-center space-x-2">
                         <span class="text-lg">📄</span> 
                         <span>คัดลอกสรุปแผน</span>
                     </button>
-                    <button onclick="saveAsImage()" id="btnSaveImg" class="action-btn px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl text-sm font-semibold shadow-md flex items-center space-x-2">
+                    <button onclick="saveAsImage()" id="btnSaveImg" class="action-btn px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl text-sm font-bold shadow-md flex items-center space-x-2">
                         <span class="text-lg">📸</span> 
                         <span>บันทึกรูปภาพ</span>
                     </button>
                 </div>
 
-                <div class="glow-card text-center">
+                <div class="glow-card text-center mt-2">
                     <p class="text-amber-800 font-semibold mb-2 tracking-wide text-lg">จำนวนเงินที่ต้องลงทุนต่อเดือน</p>
                     <h3 class="text-5xl md:text-7xl font-bold text-slate-900 tracking-tight drop-shadow-sm my-4" id="resMonthlyInvest">🔥 ฿0 🔥</h3>
                     <div class="inline-block bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full text-amber-900 font-medium mt-2 text-sm border border-amber-200 text-balance">
@@ -519,7 +518,7 @@
             calculateAndRender();
         }
 
-        // 🌟 ฟังก์ชันแชร์ข้อความ (Copy to Clipboard)
+        // 🌟 ฟังก์ชันคัดลอกข้อความ
         function copyPlanText() {
             const btn = document.getElementById('btnCopy');
             const originalText = btn.innerHTML;
@@ -536,21 +535,20 @@
             const targetPort = document.getElementById('resTargetPort').innerText;
             const futureDividend = document.getElementById('resFutureDividend').innerText;
 
-            let text = `🎯 แผนเกษียณด้วยปันผลของฉัน (FIRE Plan)\n\n`;
-            text += `🔹 เป้าหมายปันผล: ฿${targetMonthly} / เดือน (ณ วันนี้)\n`;
-            text += `🔹 ระยะเวลาเป้าหมาย: ${totalYears} ปี\n`;
+            let text = `🎯 แผนเกษียณด้วยปันผล (FIRE Plan)\n\n`;
+            text += `🔹 เป้าหมายปันผล: ฿${targetMonthly} / เดือน\n`;
+            text += `🔹 ระยะเวลาสะสมพอร์ต: ${totalYears} ปี\n`;
             if (investYears < totalYears) {
-                text += `🔹 เวลาเติมเงินลงทุน: ${investYears} ปี (ปล่อยเงินโตต่อ ${totalYears - investYears} ปี)\n`;
+                text += `🔹 เวลาเติมเงิน: ${investYears} ปี (ปล่อยเงินโตเอง ${totalYears - investYears} ปี)\n`;
             }
-            text += `🔹 ผลตอบแทนคาดหวัง: ${growthRate}% ต่อปี\n`;
-            text += `🔹 อัตราปันผลคาดหวัง: ${dividendYield}%\n`;
-            if (hasInflation) text += `🔹 อัตราเงินเฟ้อเผื่อไว้: ${inflation}% ต่อปี\n`;
+            text += `🔹 ผลตอบแทนคาดหวัง: ${growthRate}% / อัตราปันผล: ${dividendYield}%\n`;
+            if (hasInflation) text += `🔹 อัตราเงินเฟ้อเผื่อไว้: ${inflation}%\n`;
             
             text += `\n-------------------------\n`;
             text += `💡 สิ่งที่ต้องทำ: ลงทุน ${monthlyInvest} / เดือน\n`;
-            text += `🚀 ขนาดพอร์ตเป้าหมาย: ${targetPort} (รับปันผล ${futureDividend}/เดือนในอนาคต)\n`;
+            text += `🚀 ขนาดพอร์ตเป้าหมาย: ${targetPort} (รับปันผล ${futureDividend}/เดือน)\n`;
             text += `-------------------------\n\n`;
-            text += `จำลองแผนของคุณได้ที่: ${window.location.href}`;
+            text += `จำลองแผนของคุณได้ที่: ${window.location.href.split('?')[0]}`;
 
             navigator.clipboard.writeText(text).then(() => {
                 btn.innerHTML = `<span class="text-lg">✅</span> <span>คัดลอกสำเร็จ!</span>`;
@@ -561,28 +559,38 @@
                     btn.classList.remove('bg-emerald-600');
                     btn.classList.add('bg-slate-800');
                 }, 2500);
-            }).catch(err => {
-                alert("เกิดข้อผิดพลาดในการคัดลอก กรุณาลองใหม่อีกครั้ง");
-            });
+            }).catch(err => alert("เกิดข้อผิดพลาดในการคัดลอก"));
         }
 
-        // 🌟 ฟังก์ชันบันทึกรูปภาพ (Save Image)
+        // 🌟 ฟังก์ชันบันทึกรูปลงเครื่อง (รองรับ Mobile Safari)
         function saveAsImage() {
             const btn = document.getElementById('btnSaveImg');
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<span class="text-lg">⏳</span> <span>กำลังประมวลผล...</span>`;
+            btn.innerHTML = `<span class="text-lg">⏳</span> <span>กำลังสร้างภาพ...</span>`;
             
-            // รอให้ Chart วาดเส้นใหม่เสร็จ
+            // หน่วงเวลาเล็กน้อยเพื่อให้กราฟเรนเดอร์สมบูรณ์ก่อนถ่าย
             setTimeout(() => {
                 html2canvas(document.getElementById('exportArea'), {
                     scale: 2, 
                     backgroundColor: '#f1f5f9',
                     ignoreElements: (element) => element.hasAttribute('data-html2canvas-ignore')
                 }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = 'My-Dividend-FIRE-Plan.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    try {
+                        const image = canvas.toDataURL('image/png');
+                        const link = document.createElement('a');
+                        link.href = image;
+                        link.download = 'My-Dividend-FIRE-Plan.png';
+                        // เทคนิคนี้ช่วยให้ Safari/Chrome บนมือถือยอมให้ดาวน์โหลด
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        btn.innerHTML = `<span class="text-lg">✅</span> <span>บันทึกสำเร็จ!</span>`;
+                    } catch (e) {
+                        alert("อุปกรณของคุณอาจไม่รองรับการดาวน์โหลดรูปอัตโนมัติ กรุณาลองใหม่ครับ");
+                    }
+                    setTimeout(() => { btn.innerHTML = originalText; }, 2500);
+                }).catch(err => {
+                    alert("เกิดข้อผิดพลาดในการสร้างภาพ");
                     btn.innerHTML = originalText;
                 });
             }, 300);
@@ -944,10 +952,13 @@
                                 const position = context.chart.canvas.getBoundingClientRect();
                                 
                                 tooltipEl.style.opacity = 1;
-                                tooltipEl.style.pointerEvents = 'auto';
+                                tooltipEl.style.pointerEvents = 'auto'; 
                                 
                                 let leftPos = position.left + window.scrollX + tooltip.caretX;
                                 let topPos = position.top + window.scrollY + tooltip.caretY;
+                                
+                                tooltipEl.style.left = leftPos + 'px';
+                                tooltipEl.style.top = topPos + 'px';
                                 
                                 let transform = 'translate(-50%, -100%)';
                                 let margin = '-15px 0 0 0';
@@ -1021,7 +1032,7 @@
         }
 
         window.onload = function() {
-            populateWheelPickers();
+            populateWheelPickers(); 
             
             const hasData = loadFromLocalStorage();
             if (!hasData) {

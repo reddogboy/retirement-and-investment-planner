@@ -7,8 +7,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- นำ html2canvas กลับมาเพื่อรองรับฟีเจอร์ Save Image -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Prompt:wght@300;400;500;600;700&display=swap');
@@ -121,18 +119,6 @@
             transition: all 0.2s;
         }
         .group:hover .tooltip-icon { background-color: #0f172a; }
-
-        /* ปุ่มแชร์ */
-        .action-btn {
-            transition: all 0.3s ease;
-        }
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1);
-        }
-        .action-btn:active {
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -149,7 +135,7 @@
             <div class="lg:col-span-4 glass-card space-y-6">
                 
                 <!-- Preset Buttons -->
-                <div data-html2canvas-ignore>
+                <div>
                     <h3 class="text-sm font-semibold text-slate-700 mb-3">💡 เลือกแผนเริ่มต้นฉบับเร่งด่วน</h3>
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="applyPreset(15000, 20, 8)" class="text-sm py-2 px-3 bg-slate-50 border border-slate-200 hover:border-sky-500 hover:text-sky-700 rounded-xl transition-all shadow-sm font-medium">
@@ -266,7 +252,7 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-200" data-html2canvas-ignore>
+                    <div class="pt-4 border-t border-slate-200">
                         <h3 class="text-sm font-semibold text-slate-700 mb-3">⚙️ ตั้งค่ากราฟ</h3>
                         <div class="grid grid-cols-2 gap-3 sm:gap-4">
                             <div class="flex flex-col justify-end h-full relative">
@@ -294,19 +280,7 @@
 
             <div class="lg:col-span-8 space-y-6 relative">
 
-                <!-- 🌟 ระบบแชร์ (จัดกึ่งกลางให้สวยงาม) -->
-                <div class="flex flex-wrap items-center justify-center gap-3 mb-6" data-html2canvas-ignore>
-                    <button onclick="copyPlanText()" id="btnCopy" class="action-btn px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-md flex items-center space-x-2">
-                        <span class="text-lg">📄</span> 
-                        <span>คัดลอกสรุปแผน</span>
-                    </button>
-                    <button onclick="saveAsImage()" id="btnSaveImg" class="action-btn px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl text-sm font-bold shadow-md flex items-center space-x-2">
-                        <span class="text-lg">📸</span> 
-                        <span>บันทึกรูปภาพ</span>
-                    </button>
-                </div>
-
-                <div class="glow-card text-center mt-2">
+                <div class="glow-card text-center">
                     <p class="text-amber-800 font-semibold mb-2 tracking-wide text-lg">จำนวนเงินที่ต้องลงทุนต่อเดือน</p>
                     <h3 class="text-5xl md:text-7xl font-bold text-slate-900 tracking-tight drop-shadow-sm my-4" id="resMonthlyInvest">🔥 ฿0 🔥</h3>
                     <div class="inline-block bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full text-amber-900 font-medium mt-2 text-sm border border-amber-200 text-balance">
@@ -360,7 +334,16 @@
                     </div>
                 </div>
 
-                <div class="mt-8 p-5 bg-slate-50 rounded-xl border border-slate-200 shadow-sm text-center" data-html2canvas-ignore>
+                <!-- 🌟 ย้ายปุ่มคัดลอกสรุปแผนมาไว้ด้านล่างสุด (ก่อนคำเตือน) -->
+                <div class="flex justify-center mt-8 mb-4">
+                    <button onclick="copyPlanText()" id="btnCopy" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md flex items-center space-x-2 transition-all">
+                        <span class="text-lg">📄</span> 
+                        <span>คัดลอกสรุปแผน (Copy Text)</span>
+                    </button>
+                </div>
+
+                <!-- คำเตือนความเสี่ยง (Disclaimer) -->
+                <div class="mt-4 p-5 bg-slate-50 rounded-xl border border-slate-200 shadow-sm text-center">
                     <p class="text-[11px] sm:text-xs text-slate-500 text-balance leading-relaxed">
                         ⚠️ <strong class="text-slate-600">คำเตือน:</strong> เว็บไซต์นี้ไม่ใช่คำแนะนำในการลงทุน การลงทุนมีความเสี่ยง ผู้ลงทุนควรศึกษาข้อมูลก่อนตัดสินใจลงทุน และผลการดำเนินงานในอดีตไม่ได้เป็นสิ่งยืนยันถึงผลการดำเนินงานในอนาคต เว็บไซต์นี้เป็นเพียงการจำลองและคำนวณเพื่อเป็นแนวทางในการศึกษาเท่านั้น
                     </p>
@@ -369,7 +352,7 @@
             </div>
         </div>
 
-        <div class="w-full max-w-2xl mx-auto mt-10 text-center text-slate-600 text-xs sm:text-sm font-medium bg-white/60 p-4 rounded-2xl shadow-sm border border-white/50 backdrop-blur-sm" data-html2canvas-ignore>
+        <div class="w-full max-w-2xl mx-auto mt-10 text-center text-slate-600 text-xs sm:text-sm font-medium bg-white/60 p-4 rounded-2xl shadow-sm border border-white/50 backdrop-blur-sm">
             👾 ลองเล่นโปรแกรมจำลองและคำนวณอย่างอื่นได้ที่<br>
             <a href="https://reddogboy.github.io/lottery-kitchenruay-website/" target="_blank" class="text-sky-600 hover:text-sky-800 hover:underline inline-block mt-1.5 transition-colors font-semibold">
                 https://reddogboy.github.io/lottery-kitchenruay-website/
@@ -423,7 +406,7 @@
             const tooltipEl = document.getElementById('chartjs-tooltip');
             if(tooltipEl) {
                 tooltipEl.style.opacity = 0;
-                tooltipEl.style.pointerEvents = 'none'; 
+                tooltipEl.style.pointerEvents = 'none';
                 if (myChart) {
                     myChart.setActiveElements([], {x: 0, y: 0});
                     myChart.update();
@@ -518,7 +501,7 @@
             calculateAndRender();
         }
 
-        // 🌟 ฟังก์ชันคัดลอกข้อความ
+        // 🌟 ฟังก์ชันคัดลอกข้อความสรุปแผน
         function copyPlanText() {
             const btn = document.getElementById('btnCopy');
             const originalText = btn.innerHTML;
@@ -528,7 +511,7 @@
             const investYears = getNumberValue('investYears');
             const growthRate = getNumberValue('growthRate');
             const dividendYield = getNumberValue('dividendYield');
-            const hasInflation = toggleInflation.checked;
+            const hasInflation = document.getElementById('toggleInflation').checked;
             const inflation = getNumberValue('inflation');
             
             const monthlyInvest = document.getElementById('resMonthlyInvest').innerText;
@@ -562,43 +545,10 @@
             }).catch(err => alert("เกิดข้อผิดพลาดในการคัดลอก"));
         }
 
-        // 🌟 ฟังก์ชันบันทึกรูปลงเครื่อง (รองรับ Mobile Safari)
-        function saveAsImage() {
-            const btn = document.getElementById('btnSaveImg');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<span class="text-lg">⏳</span> <span>กำลังสร้างภาพ...</span>`;
-            
-            // หน่วงเวลาเล็กน้อยเพื่อให้กราฟเรนเดอร์สมบูรณ์ก่อนถ่าย
-            setTimeout(() => {
-                html2canvas(document.getElementById('exportArea'), {
-                    scale: 2, 
-                    backgroundColor: '#f1f5f9',
-                    ignoreElements: (element) => element.hasAttribute('data-html2canvas-ignore')
-                }).then(canvas => {
-                    try {
-                        const image = canvas.toDataURL('image/png');
-                        const link = document.createElement('a');
-                        link.href = image;
-                        link.download = 'My-Dividend-FIRE-Plan.png';
-                        // เทคนิคนี้ช่วยให้ Safari/Chrome บนมือถือยอมให้ดาวน์โหลด
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        btn.innerHTML = `<span class="text-lg">✅</span> <span>บันทึกสำเร็จ!</span>`;
-                    } catch (e) {
-                        alert("อุปกรณของคุณอาจไม่รองรับการดาวน์โหลดรูปอัตโนมัติ กรุณาลองใหม่ครับ");
-                    }
-                    setTimeout(() => { btn.innerHTML = originalText; }, 2500);
-                }).catch(err => {
-                    alert("เกิดข้อผิดพลาดในการสร้างภาพ");
-                    btn.innerHTML = originalText;
-                });
-            }, 300);
-        }
-
         function calculateAndRender() {
             const targetMonthly = getNumberValue('targetMonthly');
             const inflation = toggleInflation.checked ? getNumberValue('inflation') : 0;
+            
             const dividendYield = getNumberValue('dividendYield');
             const totalYears = getNumberValue('totalYears');
             
@@ -606,6 +556,7 @@
                 document.getElementById('investYears').value = totalYears;
             }
             let investYears = getNumberValue('investYears');
+            
             const initialLumpSum = getNumberValue('initialLumpSum');
             const growthRate = getNumberValue('growthRate');
             let investDate = getNumberValue('investDate') || 1;
